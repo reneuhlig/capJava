@@ -28,6 +28,7 @@ import cds.gen.inventoryservice.Articles_;
 import cds.gen.inventoryservice.Articles;
 import cds.gen.inventoryservice.Products;
 
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,14 +36,14 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.stream.Collectors;
+
 
 
 @Component
 @ServiceName("InventoryService")
 public class InventoryServiceHandler {
 
-
+    
     @On(event = CqnService.EVENT_CREATE, entity = Articles_.CDS_NAME)
     public void createArticles(CdsCreateEventContext context) {
         List<Map<String, Object>> articles = context.getCqn().entries();
@@ -70,93 +71,52 @@ public class InventoryServiceHandler {
 
     @On(event = CqnService.EVENT_READ, entity = Products_.CDS_NAME)
     public void readProducts(CdsReadEventContext context) {
-        Result result = context.getService().run(Select.from(Articles_.class));
-        context.setResult(result);
+        Result result = context.getService().run(Select.from(Products_.class));
+        Result countResult = context.getService().run(
+            Select.from(Articles_.class)
+                .columns((Products_.ID), "count(*) as stock")
+                .groupBy(Products_.ID)
+        );
+
+        Map<String, Integer> articleCountMap = new HashMap<>();
+        countResult.listOf(Map.class).forEach(entry -> {
+            String productId = (String) entry.get("product_ID");
+            Integer stock = ((Long) entry.get("stock")).intValue();
+            articleCountMap.put(productId, stock);
+        });
+
+        List<Products> products = result.listOf(Products.class);
+            products.forEach(product -> {
+            Integer stock = articleCountMap.getOrDefault(product.getId(), 1);
+            product.setStock(stock);
+            product.setTotalValue(product.getPrice().multiply(new BigDecimal(stock)));
+        });
+
+        bubbleSort(products);
+        
+        context.setResult(products);
     }
 
-    @After(event = CqnService.EVENT_READ, entity = Products_.CDS_NAME)
-    public void afterReadProducts(CdsReadEventContext context, List<Products> products) {
-        for(Products product: products) {
-            Result countResult = context.getService().run(Select.from(Articles_.class)
-            .columns(c-> CQL.count(c.get("ID")).as("stock"))
-            .groupBy(g -> g.get("productId"))
-            .where(entity -> entity.product_ID().eq(product.getId())));
-
-            // Berechne den totalValue
-            if (product.getPrice() != null) {
-                product.setTotalValue(product.getPrice().multiply(BigDecimal.valueOf(1)));
+    public void bubbleSort(List<Products> products) {
+        int n = products.size();
+        boolean swapped;
+    
+        // Äußere Schleife: Durchläuft die Liste mehrfach
+        do {
+            swapped = false;
+            for (int i = 0; i < n - 1; i++) {
+                // Vergleicht benachbarte Elemente und tauscht sie, falls nötig
+                if (products.get(i).getTotalValue().compareTo(products.get(i + 1).getTotalValue()) < 0) {
+                    // Elemente tauschen
+                    Products temp = products.get(i);
+                    products.set(i, products.get(i + 1));
+                    products.set(i + 1, temp);
+                    swapped = true;
+                }
             }
-
-        }
+            n--; // Letztes Element ist bereits sortiert
+        } while (swapped);
     }
 
-
-
-
-
-    // @After(event = CqnService.EVENT_READ, entity = Products_.CDS_NAME)
-    // public void afterReadProducts(List<Products> products) {
-    //     products.forEach(product -> {
-    //         String productId = product.getId();
-    //         long count = getCountOfArticlesByProduct(context, productId);
-    //         product.setStock(count);
-    //         if (product.getPrice() != null) {
-    //             product.setTotalValue(product.getPrice().multiply(BigDecimal.valueOf(count)));
-    //         }
-    //     });
-    // }
-
-    // @On(event = "sortProductsByTotalValue")
-    // public List<Products> sortProductsByTotalValue(CdsReadEventContext context) {
-    //     List<Products> products = context.getService().run(Select.from(Products_.class)).listOf(Products.class);
-    //     products.forEach(product -> {
-    //         String productId = product.getId();
-    //         long count = getCountOfArticlesByProduct(context, productId);
-    //         product.setStock(count);
-    //         if (product.getPrice() != null) {
-    //             product.setTotalValue(product.getPrice().multiply(BigDecimal.valueOf(count)));
-    //         }
-    //     });
-    //     return products.stream().sorted((a, b) -> b.getTotalValue().compareTo(a.getTotalValue())).collect(Collectors.toList());
-    // }
-
-    // private void updateProductStockAndValue(CdsRuntime context, String productId) {
-    //     long count = getCountOfArticlesByProduct(context, productId);
-    //     BigDecimal totalValue = getPriceByProduct(context, productId).multiply(BigDecimal.valueOf(count));
-
-    //     CqnUpdate update = Update.entity(Products_.class)
-    //                              .data(Products.STOCK, count)
-    //                              .data(Products.TOTAL_VALUE, totalValue)
-    //                              .where(a -> a.ID().eq(productId));
-
-    //     context.getService().run(update);
-    // }
-
-    // private long getCountOfArticlesByProduct(CdsRuntime context, String productId) {
-    //     Result result = context.getService().run(
-    //         Select.from(Articles_.class)
-    //               .columns(Aggregations.count(a -> a.ID()).as("count"))
-    //               .where(a -> a.PRODUCT_ID().eq(productId))
-    //     );
-    //     return result.first().map(r -> (Long) r.get("count")).orElse(0L);
-    // }
-
-    // private BigDecimal getPriceByProduct(CdsRuntime context, String productId) {
-    //     Result result = context.getService().run(
-    //         Select.from(Products_.class)
-    //               .columns(a -> a.price())
-    //               .where(a -> a.ID().eq(productId))
-    //     );
-    //     return result.first().map(r -> (BigDecimal) r.get("price")).orElse(BigDecimal.ZERO);
-    // }
-
-    // private String getProductByArticle(CdsRuntime context, String articleId) {
-    //     Result result = context.getService().run(
-    //         Select.from(Articles_.class)
-    //               .columns(a -> a.product_ID())
-    //               .where(a -> a.ID().eq(articleId))
-    //     );
-    //     return result.first().map(r -> (String) r.get("product_ID")).orElse(null);
-    // }
 
 }

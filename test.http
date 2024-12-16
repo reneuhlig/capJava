@@ -1,0 +1,20 @@
+Get http://localhost:8080/odata/v4/InventoryService/Products
+Content-Type: application/json
+
+
+# POST http://localhost:8080/odata/v4/InventoryService/Products
+# Content-Type: application/json
+
+# {
+#   "name": "Monitor",
+#   "price": 299.99
+# }
+
+
+# POST http://localhost:8080/odata/v4/InventoryService/Articles
+# Content-Type: application/json
+
+# {
+#   "serialNumber": "U1V2W3X4Y5",
+#   "product_ID": "1cacb50f-38bd-4c69-a36e-6cc2a15679ad"  
+# }
