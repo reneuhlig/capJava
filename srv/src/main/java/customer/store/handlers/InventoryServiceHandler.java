@@ -37,8 +37,7 @@ public class InventoryServiceHandler implements EventHandler{
     private PersistenceService db;
     
     @On(event = CqnService.EVENT_CREATE, entity = Articles_.CDS_NAME)
-    public void createArticles(CdsCreateEventContext context) {
-        List<Map<String, Object>> articles = context.getCqn().entries();
+    public void createArticles(CdsCreateEventContext context, List<Articles> articles) {
         Result result = db.run(Insert.into(Articles_.class).entries(articles));
         context.setResult(result);
     }
@@ -65,7 +64,6 @@ public class InventoryServiceHandler implements EventHandler{
     public void readProducts(CdsReadEventContext context) {
 
         Result productResult = db.run(Select.from(Products_.class));
-  
         Result articlesResult = db.run(Select.from(Articles_.class));
     
         Map<String, Integer> articleCountMap = new HashMap<>();
@@ -92,20 +90,20 @@ public class InventoryServiceHandler implements EventHandler{
         int n = products.size();
         boolean swapped;
     
-        // Äußere Schleife: Durchläuft die Liste mehrfach
+      
         do {
             swapped = false;
             for (int i = 0; i < n - 1; i++) {
-                // Vergleicht benachbarte Elemente und tauscht sie, falls nötig
+           
                 if (products.get(i).getTotalValue().compareTo(products.get(i + 1).getTotalValue()) < 0) {
-                    // Elemente tauschen
+ 
                     Products temp = products.get(i);
                     products.set(i, products.get(i + 1));
                     products.set(i + 1, temp);
                     swapped = true;
                 }
             }
-            n--; // Letztes Element ist bereits sortiert
+            n--; 
         } while (swapped);
     }
 
