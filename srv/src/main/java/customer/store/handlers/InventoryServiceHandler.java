@@ -70,7 +70,7 @@ public class InventoryServiceHandler implements EventHandler{
     
         Map<String, Integer> articleCountMap = new HashMap<>();
         articlesResult.listOf(Articles.class).forEach(article -> {
-            String productId = article.getProduct().getId();
+            String productId = article.getProductId();
             articleCountMap.put(productId, articleCountMap.getOrDefault(productId, 0) + 1);
         });
     
