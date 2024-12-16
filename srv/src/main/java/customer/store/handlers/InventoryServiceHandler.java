@@ -82,12 +82,9 @@ public class InventoryServiceHandler {
             .groupBy(g -> g.get("productId"))
             .where(entity -> entity.product_ID().eq(product.getId())));
 
-            long count = countResult.first().map(r -> (Long) r.get("stock")).orElse(0L);
-            product.;
-
             // Berechne den totalValue
             if (product.getPrice() != null) {
-                product.setTotalValue(product.getPrice().multiply(BigDecimal.valueOf(count)));
+                product.setTotalValue(product.getPrice().multiply(BigDecimal.valueOf(1)));
             }
 
         }
