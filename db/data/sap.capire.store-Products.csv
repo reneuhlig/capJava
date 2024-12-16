@@ -1,5 +1,5 @@
-ID;name;price;createdAt;createdBy;modifiedAt;modifiedBy
-001;Product A;10.00;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
-002;Product B;15.50;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
-003;Product C;20.00;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
-004;Product D;25.75;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
+ID;name;stock;totalValue;price;createdAt;createdBy;modifiedAt;modifiedBy
+001;Product A;0;0;10.00;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
+002;Product B;0;0;15.50;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
+003;Product C;0;0;20.00;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
+004;Product D;0;0;25.75;2023-10-01T00:00:00Z;admin;2023-10-01T00:00:00Z;admin
