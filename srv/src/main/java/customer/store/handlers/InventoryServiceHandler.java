@@ -83,7 +83,7 @@ public class InventoryServiceHandler {
             .where(entity -> entity.product_ID().eq(product.getId())));
 
             long count = countResult.first().map(r -> (Long) r.get("stock")).orElse(0L);
-            product.setStock(count);
+            product.;
 
             // Berechne den totalValue
             if (product.getPrice() != null) {
