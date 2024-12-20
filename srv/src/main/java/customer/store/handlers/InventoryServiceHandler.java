@@ -50,13 +50,15 @@ public class InventoryServiceHandler implements EventHandler{
 
     @On(event= CqnService.EVENT_UPDATE, entity = Articles_.CDS_NAME)
     public void updateArticles(CdsUpdateEventContext context, Articles article) {
-    Result result = db.run(Update.entity(Articles_.class).data(article).where(entry -> entry.ID().eq(article.getId())));
+    Result result = db.run(Update.entity(Articles_.class).data(article)
+    .where(entry -> entry.ID().eq(article.getId())));
     context.setResult(result);
     }
 
     @On(event= CqnService.EVENT_DELETE, entity = Articles_.CDS_NAME)
     public void deleteArticles(CdsDeleteEventContext context, Articles article) {
-        Result result = db.run(Delete.from(Articles_.class).where(entry -> entry.ID().eq(article.getId())));
+        Result result = db.run(Delete.from(Articles_.class)
+        .where(entry -> entry.ID().eq(article.getId())));
         context.setResult(result);
     }
 
