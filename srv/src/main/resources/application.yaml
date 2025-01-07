@@ -4,22 +4,3 @@ spring:
   sql.init.schema-locations: classpath:schema-h2.sql
 cds:
   data-source.auto-config.enabled: false
-  security.authentication.mode: none
----
-management:
-  endpoint:
-    health:
-      show-components: always
-      probes:
-        enabled: true
-  endpoints:
-    web:
-      exposure:
-        include: health
-  health:
-    defaults:
-      enabled: false
-    ping:
-      enabled: true
-    db:
-      enabled: true
